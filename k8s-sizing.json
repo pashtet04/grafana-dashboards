@@ -590,20 +590,20 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "dark-red",
                 "value": 0
               },
               {
-                "color": "dark-yellow",
-                "value": 70
-              },
-              {
                 "color": "dark-orange",
-                "value": 85
+                "value": 5
               },
               {
-                "color": "dark-red",
-                "value": 95
+                "color": "dark-yellow",
+                "value": 15
+              },
+              {
+                "color": "dark-green",
+                "value": 30
               }
             ]
           },
@@ -653,7 +653,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  100 *\n  sum by (node) (\n    kube_pod_container_resource_requests{resource=\"memory\",unit=\"byte\",namespace!=\"\"}\n    * on (namespace,pod) group_left(node)\n      kube_pod_info{node!=\"\"}\n  )\n  /\n  sum by (node) (\n    kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"}\n  )\n)\n* on (node) group_left(label_cloud_google_com_compute_class)\nmax by (node, label_cloud_google_com_compute_class) (\n  kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n)",
+          "expr": "100 *\nsum by (label_cloud_google_com_compute_class) (\n  (\n    label_replace(\n      node_memory_MemAvailable_bytes\n      * on (instance) group_left(nodename) node_uname_info,\n      \"node\", \"$1\", \"nodename\", \"(.*)\"\n    )\n  )\n  * on (node) group_left(label_cloud_google_com_compute_class)\n    max by (node, label_cloud_google_com_compute_class) (\n      kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n    )\n)\n/\nsum by (label_cloud_google_com_compute_class) (\n  kube_node_status_allocatable{resource=\"memory\",unit=\"byte\"}\n  * on (node) group_left(label_cloud_google_com_compute_class)\n    max by (node, label_cloud_google_com_compute_class) (\n      kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n    )\n)",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -663,21 +663,6 @@
             "type": "prometheus",
             "uid": "${DS_VICTORIAMETRICS}"
           }
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "max by (node, label_cloud_google_com_compute_class) (\n  kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n)",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "B"
         }
       ],
       "title": "% RAM requests / allocatable per node",
@@ -810,7 +795,7 @@
         {
           "editorMode": "code",
           "exemplar": false,
-          "expr": "(\n  100 *\n  sum by (node) (\n    kube_pod_container_resource_requests{resource=\"cpu\",unit=\"core\",namespace!=\"\"}\n    * on (namespace,pod) group_left(node)\n      kube_pod_info{node!=\"\"}\n  )\n  /\n  sum by (node) (\n    kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"}\n  )\n)\n* on (node) group_left(label_cloud_google_com_compute_class)\nmax by (node, label_cloud_google_com_compute_class) (\n  kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n)",
+          "expr": "100 *\nsum by (label_cloud_google_com_compute_class) (\n  (\n    kube_pod_container_resource_requests{resource=\"cpu\",unit=\"core\",namespace!=\"\"}\n    * on (namespace,pod) group_left(node)\n      kube_pod_info{node!=\"\"}\n  )\n  * on (node) group_left(label_cloud_google_com_compute_class)\n    max by (node, label_cloud_google_com_compute_class) (\n      kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n    )\n)\n/\nsum by (label_cloud_google_com_compute_class) (\n  kube_node_status_allocatable{resource=\"cpu\",unit=\"core\"}\n  * on (node) group_left(label_cloud_google_com_compute_class)\n    max by (node, label_cloud_google_com_compute_class) (\n      kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n    )\n)\n",
           "format": "table",
           "instant": true,
           "legendFormat": "__auto",
@@ -820,21 +805,6 @@
             "type": "prometheus",
             "uid": "${DS_VICTORIAMETRICS}"
           }
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_VICTORIAMETRICS}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "max by (node, label_cloud_google_com_compute_class) (\n  kube_node_labels{label_cloud_google_com_compute_class!=\"\"}\n)",
-          "format": "table",
-          "hide": false,
-          "instant": true,
-          "legendFormat": "__auto",
-          "range": false,
-          "refId": "B"
         }
       ],
       "title": "% CPU requests / allocatable per node",
@@ -3273,6 +3243,6 @@
   "timezone": "browser",
   "title": "Kubernetes Resource Right-Sizing (CPU & Memory)",
   "uid": "adzw5mt",
-  "version": 4,
+  "version": 5,
   "weekStart": ""
 }
